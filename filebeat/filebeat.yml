@@ -1,0 +1,80 @@
+filebeat.inputs:
+  # Collect logs directly from the Docker socket
+  - type: container
+    paths:
+      - "/var/lib/docker/containers/*/*.log"
+    processors:
+      - add_docker_metadata:
+          host: "unix:///var/run/docker.sock"
+      - decode_json_fields:
+          fields: ["message"]
+          target: "app"
+          overwrite_keys: true
+          add_error_key: true
+
+    # Filter to only ship ecommerce-api logs to Elasticsearch
+    condition:
+      equals:
+        docker.container.name: "ecommerce-api"
+
+filebeat.autodiscover:
+  providers:
+    - type: docker
+      hints.enabled: true
+      templates:
+        - condition:
+            contains:
+              docker.container.image: "ecommerce"
+          config:
+            - type: container
+              paths:
+                - "/var/lib/docker/containers/${data.docker.container.id}/*.log"
+              processors:
+                - decode_json_fields:
+                    fields: ["message"]
+                    target: "app"
+                    overwrite_keys: true
+
+processors:
+  - add_host_metadata:
+      when.not.contains.tags: forwarded
+  - add_cloud_metadata: ~
+  - add_docker_metadata: ~
+  - timestamp:
+      field: app.timestamp
+      target_field: "@timestamp"
+      layouts:
+        - "2006-01-02T15:04:05Z"
+        - "2006-01-02T15:04:05.999Z"
+      ignore_failure: true
+
+output.elasticsearch:
+  hosts: ["elasticsearch:9200"]
+  index: "ecommerce-logs-%{+yyyy.MM.dd}"
+  pipeline: "ecommerce-ingest"
+
+setup.template:
+  name: "ecommerce-logs"
+  pattern: "ecommerce-logs-*"
+  settings:
+    index.number_of_shards: 1
+    index.number_of_replicas: 0
+
+setup.ilm:
+  enabled: true
+  rollover_alias: "ecommerce-logs"
+  pattern: "{now/d}-000001"
+  policy_name: "ecommerce-logs-policy"
+
+setup.kibana:
+  host: "kibana:5601"
+  # Automatically create index patterns and dashboards
+  space.id: ""
+
+# Kibana index pattern setup
+setup.dashboards.enabled: false
+
+logging.level: warning
+logging.to_files: false
+
+monitoring.enabled: false

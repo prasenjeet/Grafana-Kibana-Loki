@@ -1,0 +1,31 @@
+cluster.name: "monitoring-demo"
+node.name: "es-node-01"
+network.host: 0.0.0.0
+
+# Single-node development configuration
+discovery.type: single-node
+cluster.initial_master_nodes: ["es-node-01"]
+
+# Security – disabled for local demo (enable for production)
+xpack.security.enabled: false
+xpack.security.enrollment.enabled: false
+xpack.security.http.ssl.enabled: false
+xpack.security.transport.ssl.enabled: false
+
+# Memory and performance
+bootstrap.memory_lock: false
+indices.memory.index_buffer_size: "20%"
+thread_pool.write.queue_size: 1000
+
+# Path configuration (must align with Docker volume mounts)
+path.data: /usr/share/elasticsearch/data
+path.logs: /usr/share/elasticsearch/logs
+
+# Index lifecycle defaults
+action.destructive_requires_name: true
+
+# HTTP settings
+http.port: 9200
+http.cors.enabled: true
+http.cors.allow-origin: "*"
+http.cors.allow-headers: "Authorization,X-Requested-With,Content-Length,Content-Type"

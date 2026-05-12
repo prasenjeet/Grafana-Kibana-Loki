@@ -1,0 +1,29 @@
+server.name: "kibana-demo"
+server.host: "0.0.0.0"
+server.port: 5601
+server.publicBaseUrl: "http://localhost:5601"
+
+# Elasticsearch connection
+elasticsearch.hosts: ["http://elasticsearch:9200"]
+elasticsearch.requestTimeout: 60000
+elasticsearch.shardTimeout: 30000
+
+# Disable security for local demo
+xpack.security.enabled: false
+xpack.encryptedSavedObjects.encryptionKey: "changeme-32-char-random-string-here"
+xpack.reporting.encryptionKey: "changeme-32-char-random-string-here2"
+xpack.security.encryptionKey: "changeme-32-char-random-string-here3"
+
+# Logging
+logging.root.level: warn
+logging.appenders.default:
+  type: console
+  layout:
+    type: json
+
+# Telemetry
+telemetry.enabled: false
+telemetry.optIn: false
+
+# Fleet / Integrations – disable for minimal setup
+xpack.fleet.enabled: false

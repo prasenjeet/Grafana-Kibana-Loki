@@ -1,0 +1,47 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    environment: "demo"
+    stack: "grafana-kibana-loki"
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: []
+
+rule_files:
+  - "alert_rules.yml"
+
+scrape_configs:
+  # Prometheus self-monitoring
+  - job_name: "prometheus"
+    static_configs:
+      - targets: ["localhost:9090"]
+
+  # Sample e-commerce application
+  - job_name: "ecommerce-api"
+    metrics_path: "/metrics"
+    scrape_interval: 10s
+    static_configs:
+      - targets: ["ecommerce-api:5000"]
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+
+  # Node exporter – host-level metrics
+  - job_name: "node-exporter"
+    static_configs:
+      - targets: ["node-exporter:9100"]
+
+  # cAdvisor – container metrics
+  - job_name: "cadvisor"
+    scrape_interval: 20s
+    static_configs:
+      - targets: ["cadvisor:8080"]
+
+  # Loki self-monitoring
+  - job_name: "loki"
+    static_configs:
+      - targets: ["loki:3100"]
+    metrics_path: "/metrics"
